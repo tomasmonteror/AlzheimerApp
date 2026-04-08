@@ -36,7 +36,19 @@ El diseño está pensado para:
 
 ## 🎮 Tipos de juegos
 
-### 1. Juego de emparejamiento (Memoria)
+### 1. Juego de reconocimiento
+
+- Las cartas aparecen **boca arriba**.
+- El usuario debe seleccionar las parejas correctas.
+- Diseñado para:
+  - Pacientes en fases más avanzadas
+- Reduce carga de memoria, favoreciendo:
+  - Asociación visual
+  - Identificación
+
+---
+
+### 2. Juego de emparejamiento (Memoria)
 
 - El usuario debe encontrar parejas de cartas iguales.
 - Adaptación progresiva:
@@ -46,18 +58,6 @@ El diseño está pensado para:
   - Memoria de trabajo
   - Atención
   - Reconocimiento visual
-
----
-
-### 2. Juego de reconocimiento
-
-- Las cartas aparecen **boca arriba**.
-- El usuario debe seleccionar las parejas correctas.
-- Diseñado para:
-  - Pacientes en fases más avanzadas
-- Reduce carga de memoria, favoreciendo:
-  - Asociación visual
-  - Identificación
 
 ---
 
