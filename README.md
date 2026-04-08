@@ -136,6 +136,6 @@ No sustituye tratamiento médico profesional.
 
 ## 👤 Autor
 
-Proyecto desarrollado en el ámbito de investigación y desarrollo de herramientas digitales para estimulación cognitiva.
+Proyecto desarrollado por Tomás Montero Ripoll en el ámbito de investigación y desarrollo de herramientas digitales para estimulación cognitiva.
 
 ---
