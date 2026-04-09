@@ -23,3 +23,15 @@ class CardItem(
 
     var isCorrect by mutableStateOf<Boolean?>(null)
 }
+
+data class DifferenceArea(
+    val x: Float, // Porcentaje 0.0f a 1.0f relativo al contenedor
+    val y: Float, // Porcentaje 0.0f a 1.0f relativo al contenedor
+    val radiusDp: Float = 35f // Radio generoso para facilitar el toque
+)
+
+data class DifferenceLevel(
+    val imageLeft: String,
+    val imageRight: String,
+    val areas: List<DifferenceArea>
+)

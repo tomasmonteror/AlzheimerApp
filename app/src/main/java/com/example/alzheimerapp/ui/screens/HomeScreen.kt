@@ -3,7 +3,6 @@ package com.example.alzheimerapp.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -16,7 +15,8 @@ import com.example.alzheimerapp.navigation.Screen
 fun HomeScreen(
     navController: NavController,
     objectImages: MutableList<String>,
-    rewardImages: MutableList<RewardImage>
+    rewardImages: MutableList<RewardImage>,
+    hasDifferenceLevel: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -27,44 +27,51 @@ fun HomeScreen(
     ) {
         Text("Menú Principal", fontSize = 32.sp)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
+        // Opción principal de Emparejar
         Button(
-            onClick = { navController.navigate(Screen.Recognition.route) },
+            onClick = { navController.navigate(Screen.MatchSelection.route) },
             modifier = Modifier.fillMaxWidth().height(100.dp)
         ) {
-            Text("Emparejar-visible", fontSize = 24.sp)
+            Text("Emparejar", fontSize = 24.sp)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = { navController.navigate(Screen.Match.route) },
-            modifier = Modifier.fillMaxWidth().height(100.dp),
-            enabled = true
-        ) {
-            Text("Emparejar-memory", fontSize = 24.sp)
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { navController.navigate(Screen.ImageManager.route) },
-            modifier = Modifier.fillMaxWidth().height(60.dp)
-        ) {
-            Text("Gestionar imágenes")
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
+        // Juego de Diferencias
         Button(
             onClick = { navController.navigate(Screen.Differences.route) },
             modifier = Modifier.fillMaxWidth().height(60.dp),
+            enabled = hasDifferenceLevel,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
             )
         ) {
             Text("Juego de Diferencias")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Crear diferencias
+        Button(
+            onClick = { navController.navigate("difference_creator") },
+            modifier = Modifier.fillMaxWidth().height(60.dp)
+        ) {
+            Text("Crear diferencias")
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Gestionar imágenes
+        Button(
+            onClick = { navController.navigate(Screen.ImageManager.route) },
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiary
+            )
+        ) {
+            Text("Gestionar imágenes")
         }
     }
 }
