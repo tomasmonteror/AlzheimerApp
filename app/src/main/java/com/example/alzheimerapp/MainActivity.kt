@@ -7,8 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.*
 import com.example.alzheimerapp.data.ImageStorage
@@ -17,6 +15,7 @@ import com.example.alzheimerapp.model.DifferenceLevel
 import com.example.alzheimerapp.navigation.Screen
 import com.example.alzheimerapp.ui.screens.*
 import com.example.alzheimerapp.ui.theme.AlzheimerAppTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +26,7 @@ class MainActivity : ComponentActivity() {
 
                 val context = this
                 val navController = rememberNavController()
+                val scope = rememberCoroutineScope()
 
                 val objectImages = remember { mutableStateListOf<String>() }
                 val rewardImages = remember { mutableStateListOf<RewardImage>() }
@@ -40,6 +40,11 @@ class MainActivity : ComponentActivity() {
 
                     rewardImages.clear()
                     rewardImages.addAll(ImageStorage.loadRewards(context))
+
+                    // Cargar niveles de diferencias guardados desde el almacenamiento
+                    val loadedLevels = ImageStorage.loadDifferenceLevels(context)
+                    savedDifferenceLevels.clear()
+                    savedDifferenceLevels.addAll(loadedLevels)
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -100,6 +105,10 @@ class MainActivity : ComponentActivity() {
                                         imageRight = tempImages!!.second,
                                         onSave = { level ->
                                             savedDifferenceLevels.add(level)
+                                            // Guardar persistencia
+                                            scope.launch {
+                                                ImageStorage.saveDifferenceLevels(context, savedDifferenceLevels)
+                                            }
                                             creationStep = "ask_more"
                                         }
                                     )
@@ -130,6 +139,7 @@ class MainActivity : ComponentActivity() {
                             if (savedDifferenceLevels.isNotEmpty()) {
                                 DifferencesScreen(
                                     levels = savedDifferenceLevels,
+                                    rewardImages = rewardImages,
                                     onBack = { navController.popBackStack() }
                                 )
                             } else {
@@ -140,7 +150,21 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.ImageManager.route) {
-                            ImageManagerScreen(objectImages, rewardImages)
+                            ImageManagerScreen(
+                                objectImages = objectImages,
+                                rewardImages = rewardImages,
+                                differenceLevels = savedDifferenceLevels,
+                                onAddDifferenceLevel = {
+                                    navController.navigate("difference_creator")
+                                },
+                                onSaveAll = {
+                                    scope.launch {
+                                        // Guardar todos los cambios realizados en la pantalla de gestión
+                                        ImageStorage.saveImages(context, objectImages, rewardImages)
+                                        ImageStorage.saveDifferenceLevels(context, savedDifferenceLevels)
+                                    }
+                                }
+                            )
                         }
                     }
                 }

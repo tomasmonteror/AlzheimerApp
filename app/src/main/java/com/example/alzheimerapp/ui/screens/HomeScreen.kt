@@ -42,36 +42,26 @@ fun HomeScreen(
         // Juego de Diferencias
         Button(
             onClick = { navController.navigate(Screen.Differences.route) },
-            modifier = Modifier.fillMaxWidth().height(60.dp),
+            modifier = Modifier.fillMaxWidth().height(100.dp),
             enabled = hasDifferenceLevel,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
             )
         ) {
-            Text("Juego de Diferencias")
+            Text("Juego de Diferencias", fontSize = 24.sp)
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Crear diferencias
-        Button(
-            onClick = { navController.navigate("difference_creator") },
-            modifier = Modifier.fillMaxWidth().height(60.dp)
-        ) {
-            Text("Crear diferencias")
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
         // Gestionar imágenes
         Button(
             onClick = { navController.navigate(Screen.ImageManager.route) },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier.fillMaxWidth().height(60.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.tertiary
             )
         ) {
-            Text("Gestionar imágenes")
+            Text("Gestión de Imágenes", fontSize = 18.sp)
         }
     }
 }
