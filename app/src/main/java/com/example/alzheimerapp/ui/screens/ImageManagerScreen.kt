@@ -120,7 +120,7 @@ fun ImageManagerScreen(
                     Text("Objetos", modifier = Modifier.padding(16.dp))
                 }
                 Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
-                    Text("Recompensas", modifier = Modifier.padding(16.dp))
+                    Text("Recompensa", modifier = Modifier.padding(16.dp))
                 }
                 Tab(selected = selectedTabIndex == 2, onClick = { selectedTabIndex = 2 }) {
                     Text("Diferencias", modifier = Modifier.padding(16.dp))
