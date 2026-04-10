@@ -1,29 +1,19 @@
 package com.example.alzheimerapp.ui.screens
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.alzheimerapp.data.RewardImage
 import com.example.alzheimerapp.model.CardItem
 import com.example.alzheimerapp.model.DifficultyManager
+import com.example.alzheimerapp.model.generateCards
 import com.example.alzheimerapp.ui.components.RecognitionCardView
 import com.example.alzheimerapp.ui.components.SuccessOverlay
 import kotlinx.coroutines.delay
@@ -61,7 +51,6 @@ fun RecognitionMatchScreen(
         )
     }
 
-    // Usamos resetKey y el nivel actual como claves para regenerar las cartas
     var resetKey by remember { mutableIntStateOf(0) }
     val currentLevel = DifficultyManager.level
 
@@ -78,15 +67,11 @@ fun RecognitionMatchScreen(
     var showSuccess by remember { mutableStateOf(false) }
     var rewardImage by remember { mutableStateOf<String?>(null) }
 
-    // Reset tras victoria e incremento de nivel
     LaunchedEffect(showSuccess) {
         if (showSuccess) {
-            delay(3000) // Tiempo para ver la recompensa
-
-            // INCREMENTAR NIVEL PARA LA PRÓXIMA PANTALLA
+            delay(3000)
             DifficultyManager.increase()
-
-            resetKey++ // Dispara la regeneración de cartas
+            resetKey++
             selectedCards.clear()
             showSuccess = false
             rewardImage = null
@@ -95,7 +80,6 @@ fun RecognitionMatchScreen(
         }
     }
 
-    // Efecto para limpiar la selección visual (rojo/verde) tras un breve delay
     LaunchedEffect(selectedCards.size) {
         if (selectedCards.size == 2) {
             delay(800)
@@ -107,65 +91,86 @@ fun RecognitionMatchScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Movimientos: $moves", fontSize = 20.sp)
-            Text("Parejas: $matchedPairs / $totalPairs", fontSize = 16.sp)
-            Text("Nivel Actual: $currentLevel parejas", fontSize = 14.sp, color = MaterialTheme.colorScheme.secondary)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Dibujamos las filas de cartas
-            cards.chunked(2).forEach { row ->
+    Scaffold(
+        topBar = {
+            Surface(shadowElevation = 3.dp) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    row.forEach { card ->
-                        RecognitionCardView(card) {
-                            if (card.isMatched || card.isSelected || selectedCards.size >= 2) return@RecognitionCardView
+                    Column {
+                        Text(
+                            "Visual",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Nivel: $currentLevel | Parejas: $matchedPairs / $totalPairs",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    TextButton(onClick = { showExitDialog = true }) {
+                        Text("Salir", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+        }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                cards.chunked(2).forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        row.forEach { card ->
+                            RecognitionCardView(card) {
+                                if (card.isMatched || card.isSelected || selectedCards.size >= 2) return@RecognitionCardView
 
-                            card.isSelected = true
-                            selectedCards.add(card)
+                                card.isSelected = true
+                                selectedCards.add(card)
 
-                            if (selectedCards.size == 2) {
-                                moves++
-                                val c1 = selectedCards[0]
-                                val c2 = selectedCards[1]
+                                if (selectedCards.size == 2) {
+                                    moves++
+                                    val c1 = selectedCards[0]
+                                    val c2 = selectedCards[1]
 
-                                if (c1.imageUri == c2.imageUri) {
-                                    // ACIERTO: Se marcan en verde (isCorrect = true) y se quedan fijas (isMatched)
-                                    c1.isMatched = true
-                                    c2.isMatched = true
-                                    c1.isCorrect = true
-                                    c2.isCorrect = true
-                                    matchedPairs++
+                                    if (c1.imageUri == c2.imageUri) {
+                                        c1.isMatched = true
+                                        c2.isMatched = true
+                                        c1.isCorrect = true
+                                        c2.isCorrect = true
+                                        matchedPairs++
 
-                                    if (matchedPairs == totalPairs) {
-                                        rewardImage = rewardImages.randomOrNull()?.uri
-                                        showSuccess = true
+                                        if (matchedPairs == totalPairs) {
+                                            rewardImage = rewardImages.randomOrNull()?.uri
+                                            showSuccess = true
+                                        }
+                                    } else {
+                                        c1.isCorrect = false
+                                        c2.isCorrect = false
                                     }
-                                } else {
-                                    // ERROR: Se marcan en rojo (isCorrect = false) temporalmente
-                                    c1.isCorrect = false
-                                    c2.isCorrect = false
                                 }
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
-        }
 
-        if (showSuccess) {
-            SuccessOverlay(rewardImage)
+            if (showSuccess) {
+                SuccessOverlay(rewardImage)
+            }
         }
     }
 }

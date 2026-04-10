@@ -18,10 +18,24 @@ class CardItem(
 ) {
     var isRevealed by mutableStateOf(initialRevealed)
     var isMatched by mutableStateOf(initialMatched)
-
     var isSelected by mutableStateOf(false)
-
     var isCorrect by mutableStateOf<Boolean?>(null)
+}
+
+fun generateCards(images: List<String>): List<CardItem> {
+    val level = DifficultyManager.level
+    val selectedImages = if (images.size >= level) {
+        images.shuffled().take(level)
+    } else if (images.isNotEmpty()) {
+        List(level) { images[it % images.size] }
+    } else {
+        emptyList()
+    }
+    
+    val cardImages = (selectedImages + selectedImages).shuffled()
+    return cardImages.mapIndexed { index, uri ->
+        CardItem(id = index, imageUri = uri)
+    }
 }
 
 data class DifferenceArea(

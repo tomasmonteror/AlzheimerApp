@@ -30,8 +30,6 @@ class MainActivity : ComponentActivity() {
 
                 val objectImages = remember { mutableStateListOf<String>() }
                 val rewardImages = remember { mutableStateListOf<RewardImage>() }
-
-                // Lista persistente de niveles de diferencias para la sesión actual
                 val savedDifferenceLevels = remember { mutableStateListOf<DifferenceLevel>() }
 
                 LaunchedEffect(Unit) {
@@ -41,7 +39,6 @@ class MainActivity : ComponentActivity() {
                     rewardImages.clear()
                     rewardImages.addAll(ImageStorage.loadRewards(context))
 
-                    // Cargar niveles de diferencias guardados desde el almacenamiento
                     val loadedLevels = ImageStorage.loadDifferenceLevels(context)
                     savedDifferenceLevels.clear()
                     savedDifferenceLevels.addAll(loadedLevels)
@@ -64,7 +61,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Selección de Modo (Visible vs Memory)
                         composable(Screen.MatchSelection.route) {
                             MatchSelectionScreen(navController)
                         }
@@ -85,7 +81,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Flujo de creación incremental de niveles de diferencias
                         composable("difference_creator") {
                             var creationStep by remember { mutableStateOf("config") }
                             var tempImages by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -105,7 +100,6 @@ class MainActivity : ComponentActivity() {
                                         imageRight = tempImages!!.second,
                                         onSave = { level ->
                                             savedDifferenceLevels.add(level)
-                                            // Guardar persistencia
                                             scope.launch {
                                                 ImageStorage.saveDifferenceLevels(context, savedDifferenceLevels)
                                             }
@@ -134,7 +128,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Juego secuencial de niveles
                         composable(Screen.Differences.route) {
                             if (savedDifferenceLevels.isNotEmpty()) {
                                 DifferencesScreen(
@@ -159,10 +152,12 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onSaveAll = {
                                     scope.launch {
-                                        // Guardar todos los cambios realizados en la pantalla de gestión
                                         ImageStorage.saveImages(context, objectImages, rewardImages)
                                         ImageStorage.saveDifferenceLevels(context, savedDifferenceLevels)
                                     }
+                                },
+                                onBack = {
+                                    navController.popBackStack()
                                 }
                             )
                         }

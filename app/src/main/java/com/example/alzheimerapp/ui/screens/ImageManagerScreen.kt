@@ -12,6 +12,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +23,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.alzheimerapp.data.RewardImage
@@ -33,7 +37,8 @@ fun ImageManagerScreen(
     rewardImages: MutableList<RewardImage>,
     differenceLevels: MutableList<DifferenceLevel>,
     onAddDifferenceLevel: () -> Unit,
-    onSaveAll: () -> Unit
+    onSaveAll: () -> Unit,
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -83,16 +88,34 @@ fun ImageManagerScreen(
     }
 
     Scaffold(
+        topBar = {
+            Surface(shadowElevation = 3.dp) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Gestión",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    TextButton(onClick = onBack) {
+                        Text("Volver", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            Text(
-                text = "Gestión de imágenes",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            TabRow(selectedTabIndex = selectedTabIndex) {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
                 Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
                     Text("Objetos", modifier = Modifier.padding(16.dp))
                 }
@@ -104,10 +127,9 @@ fun ImageManagerScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // BOTÓN AÑADIR (Adaptado según la pestaña)
-            Button(
+            ExtendedFloatingActionButton(
                 onClick = {
                     if (selectedTabIndex < 2) {
                         launcher.launch(arrayOf("image/*"))
@@ -115,16 +137,23 @@ fun ImageManagerScreen(
                         onAddDifferenceLevel()
                     }
                 },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    when (selectedTabIndex) {
-                        0 -> "Añadir objetos"
-                        1 -> "Añadir recompensas"
-                        else -> "Crear nuevo nivel de diferencias"
-                    }
-                )
-            }
+                icon = { Icon(Icons.Default.Add, null) },
+                text = {
+                    Text(
+                        when (selectedTabIndex) {
+                            0 -> "Añadir objetos"
+                            1 -> "Añadir recompensas"
+                            else -> "Crear nivel"
+                        }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(16.dp),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
 
             Box(modifier = Modifier.weight(1f)) {
                 when (selectedTabIndex) {
@@ -151,18 +180,19 @@ fun DifferenceLevelsList(
 ) {
     if (levels.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No hay niveles de diferencias creados.", color = Color.Gray)
+            Text("No hay niveles de diferencias.", color = Color.Gray)
         }
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(levels) { level ->
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Row(
@@ -170,26 +200,25 @@ fun DifferenceLevelsList(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Nivel con ${level.areas.size} diferencias", style = MaterialTheme.typography.titleMedium)
+                            Text("${level.areas.size} Diferencias", fontWeight = FontWeight.SemiBold)
                             IconButton(onClick = {
                                 levels.remove(level)
                                 onChanged()
                             }) {
-                                Text("X", color = Color.Red)
+                                Text("X", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Row(Modifier.height(100.dp)) {
+                        Spacer(Modifier.height(12.dp))
+                        Row(Modifier.height(120.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             AsyncImage(
                                 model = level.imageLeft,
                                 contentDescription = null,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f).shadow(2.dp, RoundedCornerShape(8.dp))
                             )
-                            Spacer(Modifier.width(8.dp))
                             AsyncImage(
                                 model = level.imageRight,
                                 contentDescription = null,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f).shadow(2.dp, RoundedCornerShape(8.dp))
                             )
                         }
                     }
@@ -211,13 +240,14 @@ fun ObjectGrid(
     } else {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(8.dp),
-            modifier = Modifier.fillMaxSize()
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(objectImages) { uri ->
                 ImageCard(
                     uri = uri,
-                    label = null,
                     onDelete = {
                         objectImages.remove(uri)
                         onChanged()
@@ -235,7 +265,7 @@ fun RewardListReorderable(
 ) {
     if (rewards.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No hay recompensas cargadas.", color = Color.Gray)
+            Text("No hay recompensas.", color = Color.Gray)
         }
     } else {
         val state = rememberReorderableLazyListState(
@@ -250,67 +280,46 @@ fun RewardListReorderable(
             modifier = Modifier
                 .fillMaxSize()
                 .reorderable(state),
-            contentPadding = PaddingValues(12.dp)
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(
                 items = rewards,
                 key = { it.uri }
             ) { item ->
                 ReorderableItem(state, key = item.uri) { isDragging ->
-                    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "")
+                    val elevation by animateDpAsState(if (isDragging) 8.dp else 2.dp)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .shadow(elevation)
+                            .shadow(elevation, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
+                            Text(
+                                text = "☰",
                                 modifier = Modifier
-                                    .pointerInput(Unit) {
-                                        detectDragGestures { change, _ -> change.consume() }
-                                    }
-                                    .padding(end = 8.dp)
-                            ) {
-                                Text(text = "≡", style = MaterialTheme.typography.headlineMedium)
-                            }
+                                    .detectReorderAfterLongPress(state)
+                                    .padding(end = 12.dp),
+                                style = MaterialTheme.typography.headlineSmall
+                            )
 
                             AsyncImage(
                                 model = item.uri,
                                 contentDescription = null,
-                                modifier = Modifier.size(100.dp)
+                                modifier = Modifier.size(80.dp).shadow(1.dp, RoundedCornerShape(4.dp))
                             )
 
                             Spacer(modifier = Modifier.weight(1f))
 
-                            Column {
-                                Row {
-                                    IconButton(onClick = {
-                                        val index = rewards.indexOf(item)
-                                        if (index > 0) {
-                                            rewards.removeAt(index)
-                                            rewards.add(index - 1, item)
-                                            onChange(rewards.toList())
-                                        }
-                                    }) { Text("↑") }
-                                    IconButton(onClick = {
-                                        val index = rewards.indexOf(item)
-                                        if (index < rewards.lastIndex) {
-                                            rewards.removeAt(index)
-                                            rewards.add(index + 1, item)
-                                            onChange(rewards.toList())
-                                        }
-                                    }) { Text("↓") }
-                                }
-                                Button(onClick = {
-                                    rewards.remove(item)
-                                    onChange(rewards.toList())
-                                }) { Text("Eliminar") }
+                            IconButton(onClick = {
+                                rewards.remove(item)
+                                onChange(rewards.toList())
+                            }) {
+                                Text("X", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -320,45 +329,37 @@ fun RewardListReorderable(
     }
 }
 
+fun normalizeOrder(list: List<RewardImage>): List<RewardImage> {
+    return list.mapIndexed { index, item ->
+        item.copy(order = index)
+    }
+}
+
 @Composable
-fun ImageCard(
-    uri: String,
-    label: String?,
-    onDelete: () -> Unit
-) {
+fun ImageCard(uri: String, onDelete: () -> Unit) {
     Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
             AsyncImage(
                 model = uri,
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
+                    .size(120.dp)
+                    .padding(bottom = 8.dp)
+                    .shadow(1.dp, RoundedCornerShape(8.dp))
             )
-            label?.let {
-                Text(
-                    text = it,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            IconButton(
+            TextButton(
                 onClick = onDelete,
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) { Text("X", color = Color.Red) }
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Eliminar")
+            }
         }
-    }
-}
-
-fun normalizeOrder(list: List<RewardImage>): List<RewardImage> {
-    return list.mapIndexed { index, item ->
-        item.copy(order = index)
     }
 }
